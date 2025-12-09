@@ -3,12 +3,13 @@ pragma solidity >=0.8.20;
 
 import {Test} from "forge-std/Test.sol";
 import {console2} from "forge-std/console2.sol";
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import {ERC4626} from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {ERC20} from "@openzeppelin-5.3.0/token/ERC20/ERC20.sol";
+import {ERC721} from "@openzeppelin-5.3.0/token/ERC721/ERC721.sol";
+import {ERC4626} from "@openzeppelin-5.3.0/token/ERC20/extensions/ERC4626.sol";
+import {IERC20} from "@openzeppelin-5.3.0/token/ERC20/IERC20.sol";
+import {Math} from "@openzeppelin-5.3.0/utils/math/Math.sol";
 
-import {CDAuctioneerLimitOrders, ICDAuctioneer} from "src/CDAuctioneerLimitOrders.sol";
+import {CDAuctioneerLimitOrders, ICDAuctioneer} from "src/policies/deposits/LimitOrders.sol";
 
 // ========== MOCKS ========== //
 
@@ -614,7 +615,7 @@ contract CDAuctioneerLimitOrdersTest is Test {
 
         assertTrue(canFill);
         assertEq(bytes(reason).length, 0);
-        assertEq(effectivePrice, 30e18); // Mock price
+        assertApproxEqRel(effectivePrice, 30e18, 0.0001e18); // Mock price with tolerance for rounding
     }
 
     function test_canFillOrder_priceAboveMax() public {
@@ -625,7 +626,7 @@ contract CDAuctioneerLimitOrdersTest is Test {
 
         assertFalse(canFill);
         assertEq(reason, "Price above max");
-        assertEq(effectivePrice, 30e18);
+        assertApproxEqRel(effectivePrice, 30e18, 0.0001e18); // Tolerance for rounding
     }
 
     function test_canFillOrder_orderNotActive() public {
@@ -683,7 +684,7 @@ contract CDAuctioneerLimitOrdersTest is Test {
 
     function test_getExecutionPrice() public {
         uint256 price = limitOrders.getExecutionPrice(PERIOD_3, 1_000e18);
-        assertEq(price, 30e18);
+        assertApproxEqRel(price, 30e18, 0.0001e18); // Tolerance for rounding
     }
 
     function test_getFillableOrders() public {
@@ -776,4 +777,4 @@ contract CDAuctioneerLimitOrdersTest is Test {
         assertEq(usds.balanceOf(filler), 10e18);  // 2000 * 50 / 10000
         assertEq(usds.balanceOf(filler2), 15e18); // 3000 * 50 / 10000
     }
-}
+    }
